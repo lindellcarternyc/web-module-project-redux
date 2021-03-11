@@ -1,22 +1,52 @@
-const initialState = {
-    additionalPrice: 0,
-    car: {
-      price: 26395,
-      name: '2019 Ford Mustang',
-      image:
-        'https://cdn.motor1.com/images/mgl/0AN2V/s1/2019-ford-mustang-bullitt.jpg',
-      features: []
-    },
-    additionalFeatures: [
-      { id: 1, name: 'V-6 engine', price: 1500 },
-      { id: 2, name: 'Racing detail package', price: 1500 },
-      { id: 3, name: 'Premium sound system', price: 500 },
-      { id: 4, name: 'Rear spoiler', price: 250 }
-    ]
-  };
+import initialState from './state'
 
-const reducer = (state = initialState) => {
-    return state
+import { 
+    ADD_FEATURE, REMOVE_FEATURE
+} from './actions'
+
+const getAdditionalPrice = (features) => features.reduce((total, feature) => total + feature.price, 0)
+
+const reducer = (state = initialState, action) => {
+    const { type, payload } = action
+
+    switch (type) {
+        case ADD_FEATURE: {
+            if (state.car.features.find(feature => feature.id === payload.id)) {
+                return state
+            }
+            const additionalFeatures = state.additionalFeatures.filter(feature => feature.id !== payload.id)
+            const car = {
+                ...state.car,
+                features: [...state.car.features, payload]
+            }
+            const additionalPrice = getAdditionalPrice(car.features)
+
+            return {
+                ...state,
+                additionalFeatures,
+                car,
+                additionalPrice
+            }
+        }
+
+        case REMOVE_FEATURE: {
+            const car = {
+                ...state.car,
+                features: state.car.features.filter(feature => feature.id !== payload.id)
+            }
+            const additionalPrice = getAdditionalPrice(car.features)
+            const additionalFeatures = [...state.additionalFeatures, payload]
+            return {
+                ...state,
+                car,
+                additionalFeatures,
+                additionalPrice
+            }
+        }
+
+        default:
+            return state
+    }
 }
 
 export default reducer
